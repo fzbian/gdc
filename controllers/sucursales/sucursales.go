@@ -54,6 +54,8 @@ func EliminarSucursal(nombre string) (string, error) {
 	if result.Error != nil {
 		return "", result.Error
 	}
+	// Eliminar caja menor de la sucursal
+	result = db.Db.Table("caja_menor").Where("sucursal_id = ?", nombre).Delete(&models.CajaMenor{})
 	return "Sucursal eliminada exitosamente", nil
 }
 
