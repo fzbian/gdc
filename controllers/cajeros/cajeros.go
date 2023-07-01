@@ -67,12 +67,8 @@ func EditarCajero(id int, tipo string, valor any) (string, error) {
 	if !CajeroExistePorLaId(id) {
 		return "", errors.New("El cajero no existe")
 	}
-	// Verificar que el tipo no este vacio
-	if tipo == "" {
-		return "", errors.New("El tipo no puede estar vacio")
-	}
 	// Verificar que el valor no este vacio
-	if valor == "" {
+	if valor == "" || valor == nil {
 		return "", errors.New("El valor no puede estar vacio")
 	}
 	// Verificar que el valor sea valido
