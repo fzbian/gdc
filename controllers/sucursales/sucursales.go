@@ -23,6 +23,19 @@ func CreateSucursal(nombre string) (string, error) {
 	if result.Error != nil {
 		return "", result.Error
 	}
+	// Obtener los datos de la nueva sucursal
+	var sucursal models.Sucursal
+	result = db.Db.Table("sucursales").Where("nombre = ?", nombre).First(&sucursal)
+	if result.Error != nil {
+		return "", result.Error
+	}
+	// Crear la caja menor de la sucursal
+	result = db.Db.Table("caja_menor").Create(&models.CajaMenor{
+		SucursalID: sucursal.ID,
+		Saldo:      0})
+	if result.Error != nil {
+		return "", result.Error
+	}
 	return "Sucursal creada exitosamente", nil
 }
 
