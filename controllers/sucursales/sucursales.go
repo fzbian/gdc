@@ -49,6 +49,14 @@ func EditarSucursal(id int, tipo, valor string) (string, error) {
 	if tipo == "" || valor == "" {
 		return "", errors.New("El tipo y el valor no pueden ser vacios")
 	}
+	// Verificar que la id no sea 0 o menor a 0
+	if id <= 0 {
+		return "", errors.New("La id no puede ser 0 o menor a 0")
+	}
+	// Verificar que el id exista
+	if !SucursalExistePorLaId(id) {
+		return "", errors.New("No existe una sucursal con este id")
+	}
 	// Verificar que el tipo sea valido dentro de un array de tipos de la variable TiposSucursales
 	TiposSucursales := []string{"nombre"}
 	if !utils.Contains(TiposSucursales, tipo) {
