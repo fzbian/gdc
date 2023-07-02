@@ -78,3 +78,21 @@ func DevolverSaldoCajeroPorLaId(id int) (int, error) {
 	}
 	return s.Saldo, nil
 }
+
+func CajeroPerteneceASucursal(cajero_id, sucursal_id int) bool {
+	// Verificar que el id no sea vacio o menor a 0
+	if cajero_id <= 0 || sucursal_id <= 0 {
+		return false
+	}
+	// Verificar que el cajero exista
+	if !CajeroExistePorLaId(cajero_id) {
+		return false
+	}
+	// Verificar que el id no exista en la base de datos
+	var s models.Cajero
+	result := db.Db.Table("cajeros").Where("id = ? AND sucursal_id = ?", cajero_id, sucursal_id).First(&s)
+	if result.Error != nil {
+		return false
+	}
+	return true
+}

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func CreateSucursal(nombre string) (string, error) {
+func CrearSucursal(nombre string) (string, error) {
 	// Verificar que el nombre no sea vacio
 	if nombre == "" {
 		return "", errors.New("El nombre no puede ser vacio")
