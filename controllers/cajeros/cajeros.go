@@ -11,7 +11,7 @@ import (
 )
 
 // Crear cajero
-func CrearCajero(sucursal_id, saldo int) (string, error) {
+func CrearCajero(sucursal_id int) (string, error) {
 	// Verificar que la sucursal_id no sea 0 o menor a 0
 	if sucursal_id <= 0 {
 		return "", errors.New("La sucursal_id no es válida")
@@ -20,16 +20,12 @@ func CrearCajero(sucursal_id, saldo int) (string, error) {
 	if !sucursales.SucursalExistePorLaId(sucursal_id) {
 		return "", errors.New("La sucursal no existe")
 	}
-	// Verificar que el saldo no sea menor a 0
-	if saldo < 0 {
-		return "", errors.New("El saldo no puede ser menor a 0")
-	}
 
 	// Crear el cajero
 	result := db.Db.Table("cajeros").Create(&models.Cajero{
 		SucursalID:    sucursal_id,
 		UsuarioID:     nil,
-		Saldo:         saldo,
+		Saldo:         0,
 		FechaCreacion: time.Now(),
 	})
 	if result.Error != nil {

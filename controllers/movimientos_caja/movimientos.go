@@ -37,6 +37,8 @@ func CrearSesion(usuario_id, cajero_id, sucursal_id, clave, entrada_billetes_100
 	if !usuarios.ClaveCorrecta(usuario_id, clave) {
 		return "", errors.New("La clave es incorrecta")
 	}
+	// Verificar que el saldo de inicio sea el mismo saldo que el cajero cerro la sesion anterior
+	// TODO: Hacer esto
 
 	// Asignar usuario a cajero
 	result := db.Db.Table("cajeros").Where("id = ?", cajero_id).Update("usuario_id", usuario_id)
@@ -93,7 +95,7 @@ func CerrarSesion(usuario_id, cajero_id, sucursal_id, salida_billetes_100, salid
 		return "", err
 	}
 	// Verificar que el saldo de salida sea el mismo que esta en el cajero
-	if SaldoEsIgualAlSaldoDelCajero(saldosSalida, cajero_id) {
+	if !SaldoEsIgualAlSaldoDelCajero(saldosSalida, cajero_id) {
 		return "", errors.New("El saldo de salida no es igual al saldo del cajero")
 	}
 
