@@ -1,6 +1,7 @@
 package usuarios
 
 import (
+	"fmt"
 	"julio/db"
 	"julio/models"
 )
@@ -67,4 +68,24 @@ func ClaveCorrecta(usuario_id, clave int) bool {
 		return false
 	}
 	return true
+}
+
+// Verificar que el usuario tenga el rango correcto
+func RangoCorrecto(usuario_id int) bool {
+	// Verificar que el usuario exista
+	if !UsuarioExistePorLaId(usuario_id) {
+		return false
+	}
+	// Verificar que el usuario tenga el rango correcto
+	var u models.Usuarios
+	result := db.Db.Table("usuarios").Where("id = ?", usuario_id).First(&u)
+	if result.Error != nil {
+		return false
+	}
+	// Si el rango es igual o mayor a 2 significa que si tiene los permisos adecuados
+	fmt.Println(u.Rango)
+	if u.Rango >= 2 {
+		return true
+	}
+	return false
 }

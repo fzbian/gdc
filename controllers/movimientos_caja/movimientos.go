@@ -73,6 +73,7 @@ func CrearSesion(usuario_id, cajero_id, sucursal_id, clave, entrada_billetes_100
 
 // CerrarSesion
 func CerrarSesion(usuario_id, cajero_id, sucursal_id, salida_billetes_100, salida_billetes_50, salida_billetes_20, salida_billetes_10, salida_billetes_5, salida_billetes_2, salida_billetes_1, salida_monedas_1000, salida_monedas_500, salida_monedas_200, salida_monedas_100, salida_monedas_50 int) (string, error) {
+	var statusMessage string
 	// Verificar que el usuario exista
 	if !usuarios.UsuarioExistePorLaId(usuario_id) {
 		return "", errors.New("El usuario no existe")
@@ -95,9 +96,7 @@ func CerrarSesion(usuario_id, cajero_id, sucursal_id, salida_billetes_100, salid
 		return "", err
 	}
 	// Verificar que el saldo de salida sea el mismo que esta en el cajero
-	if !SaldoEsIgualAlSaldoDelCajero(saldosSalida, cajero_id) {
-		return "", errors.New("El saldo de salida no es igual al saldo del cajero")
-	}
+	descuadre, resultSaldo := SaldoEsIgualAlSaldoDelCajero(saldosSalida, cajero_id)
 
 	// Actualizar usuario quitandole el ensesion
 	result := db.Db.Table("usuarios").Where("id = ?", usuario_id).Update("usuario_en_sesion", false)
@@ -115,6 +114,10 @@ func CerrarSesion(usuario_id, cajero_id, sucursal_id, salida_billetes_100, salid
 		return "", result.Error
 	}
 
-	statusMessage := fmt.Sprintf("Sesion cerrada con un saldo de %d pesos", saldosSalida)
+	if !resultSaldo {
+		statusMessage = fmt.Sprintf("El saldo de salida es diferente al saldo del cajero, el descuadre es de %d pesos", descuadre)
+	} else {
+		statusMessage = fmt.Sprintf("Sesion cerrada con un saldo de %d pesos", saldosSalida)
+	}
 	return statusMessage, nil
 }

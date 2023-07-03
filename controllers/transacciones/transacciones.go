@@ -11,10 +11,14 @@ import (
 )
 
 // CrearTransacciones
-func CrearTransaccion(cajero_id, usuario_id, valor int, tipo, descripcion string) (string, error) {
+func CrearTransaccion(cajero_id, usuario_id, valor int, tipo, descripcion string, billetera bool) (string, error) {
 	// Verificar que el cajero exista
 	if !cajeros.CajeroExistePorLaId(cajero_id) {
 		return "El cajero no existe", nil
+	}
+	// Verificar que la billetera sea false o true
+	if billetera != false && billetera != true {
+		return "La billetera no es valida", nil
 	}
 	// Verificar que el usuario exista
 	if !usuarios.UsuarioExistePorLaId(usuario_id) {
@@ -39,6 +43,10 @@ func CrearTransaccion(cajero_id, usuario_id, valor int, tipo, descripcion string
 	}
 	// Si la transaccion es un DEPOSITO, sumar el valor al saldo del cajero
 	if tipo == "DEPOSITO" {
+		if billetera {
+			// Sumarle 1000 al valor final
+			valor += 1000
+		}
 		// Obtener el saldo del cajero
 		saldo, err := cajeros.DevolverSaldoCajeroPorLaId(cajero_id)
 		if err != nil {
@@ -52,6 +60,33 @@ func CrearTransaccion(cajero_id, usuario_id, valor int, tipo, descripcion string
 			return "", result.Error
 		}
 	} else if tipo == "RETIRO" {
+		if billetera {
+			// Si el valor esta entre el rango de 16000 y 300000
+			if valor >= 160000 && valor <= 300000 {
+				// Sumarle 1000 al valor final
+				valor += 1000
+			}
+			// Si el valor esta entre el rango de 300001 y 499999
+			if valor >= 300001 && valor <= 499999 {
+				// Sumarle 2000 al valor final
+				valor += 2000
+			}
+			// Si el valor esta entre el rango de 500000 y 799999
+			if valor >= 500000 && valor <= 799999 {
+				// Sumarle 3000 al valor final
+				valor += 3000
+			}
+			// Si el valor esta entre el rango de 800000 y 1000000
+			if valor >= 800000 && valor <= 1000000 {
+				// Sumarle 4000 al valor final
+				valor += 4000
+			}
+			// Si el valor es de mas de 1000000
+			if valor > 1000000 {
+				// Sumarle 5000 al valor final
+				valor += 5000
+			}
+		}
 		// Si la transaccion es un RETIRO, restar el valor al saldo del cajero
 		// Obtener el saldo del cajero
 		saldo, err := cajeros.DevolverSaldoCajeroPorLaId(cajero_id)
@@ -105,7 +140,11 @@ func EliminarTransaccion(id int) (string, error) {
 }
 
 // EditarTransaccion
-func EditarTransaccion(transaccion_id int, tipo string, valor any) (string, error) {
+func EditarTransaccion(usuario_id, transaccion_id int, tipo string, valor any) (string, error) {
+	// Verificar que el usuario tenga el rango adecuado
+	if !usuarios.RangoCorrecto(usuario_id) {
+		return "", errors.New("El usuario no tiene el rango adecuado para realizar esta accion")
+	}
 	// Verificar que el id no sea vacio o menor a 0
 	if transaccion_id <= 0 {
 		return "", errors.New("El id no puede ser vacio o menor a 0")
@@ -115,7 +154,7 @@ func EditarTransaccion(transaccion_id int, tipo string, valor any) (string, erro
 		return "", errors.New("La transaccion no existe")
 	}
 	// Verificar que el tipo no sea vacio
-	Tipos := []string{"descripcion"}
+	Tipos := []string{"descripcion", "valor"}
 	if !utils.Contains(Tipos, tipo) {
 		return "El tipo no es valido", nil
 	}
@@ -130,6 +169,21 @@ func EditarTransaccion(transaccion_id int, tipo string, valor any) (string, erro
 		if result.Error != nil {
 			return "", result.Error
 		}
+	} else if tipo == "valor" {
+		// Verificar que el valor no sea vacio o menor a 0
+		if valor.(int) <= 0 {
+			return "", errors.New("El valor no puede ser vacio o menor a 0")
+		}
+		// Actualizar el valor de la transaccion
+		result := db.Db.Table("transacciones").Where("id = ?", transaccion_id).Update("valor", valor)
+		if result.Error != nil {
+			return "", result.Error
+		}
+	}
+	// Modificar fecha_actualizacion
+	result := db.Db.Table("transacciones").Where("id = ?", transaccion_id).Update("fecha_actualizacion", time.Now())
+	if result.Error != nil {
+		return "", result.Error
 	}
 	return "Transaccion editada", nil
 }

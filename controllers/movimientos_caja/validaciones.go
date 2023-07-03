@@ -6,24 +6,26 @@ import (
 	"julio/models"
 )
 
-func SaldoEsIgualAlSaldoDelCajero(saldoSalida, cajero_id int) bool {
+func SaldoEsIgualAlSaldoDelCajero(saldoSalida, cajero_id int) (*int, bool) {
 	// Verificar que el saldo no sea menor a 0
 	if saldoSalida < 0 {
-		return false
+		return nil, false
 	}
 	// Verificar que el cajero exista
 	if !cajeros.CajeroExistePorLaId(cajero_id) {
-		return false
+		return nil, false
 	}
 
 	// Verificar que el saldo sea igual al saldo del cajero
 	var c models.Cajero
 	result := db.Db.Table("cajeros").Where("id = ?", cajero_id).First(&c)
 	if result.Error != nil {
-		return false
+		return nil, false
 	}
+	// Si el saldo no es igual al saldo de salida retornar false y devolver de cuanto es el descruadre
 	if c.Saldo != saldoSalida {
-		return false
+		descuadre := c.Saldo - saldoSalida
+		return &descuadre, false
 	}
-	return true
+	return nil, true
 }
