@@ -2,6 +2,7 @@ package transacciones
 
 import (
 	"errors"
+	"fmt"
 	"julio/controllers/cajeros"
 	"julio/controllers/usuarios"
 	"julio/db"
@@ -188,13 +189,30 @@ func EditarTransaccion(usuario_id, transaccion_id int, tipo string, valor any) (
 	return "Transaccion editada", nil
 }
 
-// EnlistarTransacciones
-func EnlistarTransacciones() ([]models.Transacciones, error) {
-	// Enlistar transacciones
+// EnlistarTransacciones devuelve todas las transacciones en un [][]string
+func EnlistarTransacciones() ([][]string, error) {
+	// Obtener todas las transacciones de la tabla
 	var transacciones []models.Transacciones
-	result := db.Db.Table("cajeros").Find(&transacciones)
-	if result.Error != nil {
-		return nil, result.Error
+	if err := db.Db.Find(&transacciones).Error; err != nil {
+		return nil, err
 	}
-	return transacciones, nil
+
+	// Construir la matriz de resultados
+	resultados := make([][]string, len(transacciones)+1)
+	resultados[0] = []string{"ID", "UsuarioID", "CajeroID", "Tipo", "Descripcion", "Billetera", "Valor", "FechaCreacion", "FechaActualizacion"}
+
+	for i, transaccion := range transacciones {
+		resultados[i+1] = []string{
+			fmt.Sprintf("%d", transaccion.CajeroID),
+			fmt.Sprintf("%s", usuarios.NombrePorLaId(transaccion.UsuarioID)),
+			transaccion.Tipo,
+			transaccion.Descripcion,
+			fmt.Sprintf("%t", transaccion.Billetera),
+			fmt.Sprintf("%d", transaccion.Valor),
+			//fmt.Sprintf("%s", transaccion.FechaCreacion.Format(time.RFC3339)),
+			//fmt.Sprintf("%s", transaccion.FechaActualizacion.Format(time.RFC3339)),
+		}
+	}
+
+	return resultados, nil
 }

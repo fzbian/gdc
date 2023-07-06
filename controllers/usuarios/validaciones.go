@@ -89,3 +89,18 @@ func RangoCorrecto(usuario_id int) bool {
 	}
 	return false
 }
+
+// Devolver el nombre del usuario por la id
+func NombrePorLaId(usuario_id int) string {
+	// Si el usuario no existe devolver un string vacio
+	if !UsuarioExistePorLaId(usuario_id) {
+		return "Usuario no encontrado"
+	}
+	// Devolver el nombre del usuario
+	var u models.Usuarios
+	result := db.Db.Table("usuarios").Where("id = ?", usuario_id).First(&u)
+	if result.Error != nil {
+		return "Usuario no encontrado"
+	}
+	return u.Nombre
+}
