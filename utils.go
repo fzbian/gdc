@@ -1,6 +1,9 @@
-package utils
+package main
 
-import "errors"
+import (
+	"errors"
+	"strconv"
+)
 
 func SumarSaldos(entrada_billetes_100, entrada_billetes_50, entrada_billetes_20, entrada_billetes_10, entrada_billetes_5, entrada_billetes_2, entrada_billetes_1, entrada_monedas_1000, entrada_monedas_500, entrada_monedas_200, entrada_monedas_100, entrada_monedas_50 int) (int, error) {
 	// Verificar que todas las variables sean mayores o iguales a cero
@@ -56,4 +59,32 @@ func SumarSaldos(entrada_billetes_100, entrada_billetes_50, entrada_billetes_20,
 	}
 
 	return suma, nil
+}
+
+func FormatearDinero(value int) string {
+	strValue := strconv.Itoa(value)
+
+	formattedValue := ""
+	commaCount := 0
+
+	// Recorre el valor de derecha a izquierda para agregar las comas
+	for i := len(strValue) - 1; i >= 0; i-- {
+		formattedValue = string(strValue[i]) + formattedValue
+		commaCount++
+		if commaCount == 3 && i > 0 {
+			formattedValue = "." + formattedValue
+			commaCount = 0
+		}
+	}
+
+	return "$" + formattedValue
+}
+
+func Contains(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+	return false
 }

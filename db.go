@@ -1,7 +1,8 @@
-package db
+package main
 
 import (
 	"fmt"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -19,7 +20,7 @@ func Connect() *gorm.DB {
 	DB_PASSWORD := ""
 	DB_HOST := "localhost"
 	DB_PORT := "3306"
-	DB_DATABASE := "julio"
+	DB_DATABASE := " julio"
 
 	// Create a connection string.
 	dns := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",

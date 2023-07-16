@@ -1,6 +1,19 @@
-package models
+package main
 
 import "time"
+
+type CajaMenor struct {
+	SucursalID int `db:"sucursal_id" json:"sucursal_id"`
+	Saldo      int `db:"saldo" json:"saldo"`
+}
+
+type Cajero struct {
+	ID            int       `db:"id" json:"id"`
+	SucursalID    int       `db:"sucursal_id" json:"sucursal_id"`
+	UsuarioID     *int      `db:"usuario_id" json:"usuario_id"`
+	Saldo         int       `db:"saldo" json:"saldo"`
+	FechaCreacion time.Time `db:"fecha_creacion" json:"fecha_creacion"`
+}
 
 type MovimientosCaja struct {
 	ID                 int        `db:"id" json:"id" gorm:"column:id"`
@@ -32,4 +45,45 @@ type MovimientosCaja struct {
 	SalidaMonedas100   *int       `db:"salida_monedas_100" json:"salida_monedas_100" gorm:"salida_monedas_100"  gorm:"column:salida_monedas_100"`
 	SalidaMonedas50    *int       `db:"salida_monedas_50" json:"salida_monedas_50" gorm:"salida_monedas_50" gorm:"column:salida_monedas_50"`
 	FechaSalida        *time.Time `db:"fecha_salida" json:"fecha_salida" gorm:"fecha_salida" gorm:"column:fecha_salida"`
+}
+
+type Plataformas struct {
+	ID            int       `db:"id" json:"id"`
+	SucursalID    int       `db:"sucursal_id" json:"sucursal_id"`
+	Nombre        string    `db:"nombre" json:"nombre"`
+	FechaCreacion time.Time `db:"fecha_creacion" json:"fecha_creacion"`
+}
+
+type SaldosPlataforma struct {
+	PlataformaID  int       `db:"plataforma_id" json:"plataforma_id"`
+	Saldo         int       `db:"saldo" json:"saldo"`
+	FechaCreacion time.Time `db:"fecha_creacion" json:"fecha_creacion"`
+}
+
+type Sucursal struct {
+	ID            int       `db:"id" json:"id"`
+	Nombre        string    `db:"nombre" json:"nombre"`
+	FechaCreacion time.Time `db:"fecha_creacion" json:"fecha_creacion"`
+}
+
+type Transacciones struct {
+	ID                 int       `db:"id" json:"id"`
+	UsuarioID          int       `db:"usuario_id" json:"usuario_id"`
+	CajeroID           int       `db:"cajero_id" json:"cajero_id"`
+	Tipo               string    `db:"tipo" json:"tipo"`
+	Descripcion        string    `db:"descripcion" json:"descripcion"`
+	Billetera          bool      `db:"billetera" json:"billetera"`
+	Valor              int       `db:"valor" json:"valor"`
+	FechaCreacion      time.Time `db:"fecha_creacion" json:"fecha_creacion"`
+	FechaActualizacion time.Time `db:"fecha_actualizacion" json:"fecha_actualizacion"`
+}
+
+type Usuarios struct {
+	Id              int       `db:"id" json:"id"`
+	Usuario         string    `db:"usuario" json:"usuario"`
+	Nombre          string    `db:"nombre" json:"nombre"`
+	Rango           int       `db:"rango" json:"rango"`
+	Clave           int       `db:"clave" json:"clave"`
+	UsuarioEnSesion bool      `db:"usuario_en_sesion" json:"usuario_en_sesion"`
+	FechaCreacion   time.Time `db:"fecha_creacion" json:"fecha_creacion"`
 }
