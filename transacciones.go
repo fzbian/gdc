@@ -20,7 +20,7 @@ func GetLabelsTransacciones() *widget.Label {
 
 // Funcion para crear el select de sucursales
 func GetSelectTransacciones() *widget.Select {
-	return widget.NewSelect([]string{"SUCURSAL 1", "SUCURSAL 2", "SUCURSAL 3"}, func(s string) {
+	labelSelect := widget.NewSelect([]string{"SUCURSAL 1", "SUCURSAL 2", "SUCURSAL 3"}, func(s string) {
 		switch s {
 		case "SUCURSAL 1":
 			ActualSucursal = 1
@@ -33,6 +33,8 @@ func GetSelectTransacciones() *widget.Select {
 			UpdateTable()
 		}
 	})
+	labelSelect.SetSelected("SUCURSAL 1")
+	return labelSelect
 }
 
 // Funcion para crear el boton de actualizar
@@ -62,7 +64,10 @@ func GetTabTransacciones() *fyne.Container {
 
 // Funcion para obtener la data de la base de datos
 func GetDataTable(sucursal_id int) [][]string {
-	datos, _ := ElistarTransaccionesPorSucursal(sucursal_id)
+	datos, err := ElistarTransaccionesPorSucursal(sucursal_id)
+	if err != nil {
+		panic(err)
+	}
 	return datos
 }
 
@@ -82,11 +87,56 @@ func CreateTable(data [][]string) *widget.Table {
 			l.Show()
 			b.Hide()
 			switch i.Col {
-			case 0, 1, 2, 3, 4, 5, 6, 7, 8:
+			case 0, 1, 2, 3, 5, 6, 7, 8:
 				l.SetText(data[i.Row][i.Col])
+			case 4:
+				if data[i.Row][4] == "Sin descripcion" {
+					l.SetText("Sin descripcion")
+				} else {
+					l.Hide()
+					b.Show()
+					b.SetText("Ver")
+					b.OnTapped = func() {
+						dialog := dialog.NewInformation("Descripcion", data[i.Row][4], Window)
+						dialog.Show()
+					}
+				}
 			case 9:
 				l.Hide()
 				b.Show()
+				b.OnTapped = func() {
+					var tipo string
+					var valor any
+					form := &widget.Form{
+						Items: []*widget.FormItem{
+							{Text: "Tipo", Widget: widget.NewSelect([]string{"descripcion", "valor"}, func(s string) { tipo = s })},
+							{Text: "Valor", Widget: widget.NewEntry()},
+						},
+					}
+					dialog := dialog.NewCustomConfirm("Editar transaccion", "Aceptar", "Cancelar", form, func(b bool) {
+						id, err := strconv.Atoi(data[i.Row][1])
+						if err != nil {
+							panic(err)
+						}
+
+						if tipo == "descripcion" {
+							valor = form.Items[1].Widget.(*widget.Entry).Text
+							EditarTransaccion(1, id, tipo, valor)
+							UpdateTable()
+						} else if tipo == "valor" {
+							// Si el valor no es un numero
+							valor, err := strconv.Atoi(form.Items[1].Widget.(*widget.Entry).Text)
+							if err != nil {
+								dialog := dialog.NewInformation("Error", "El valor debe ser un numero", Window)
+								dialog.Show()
+								return
+							}
+							EditarTransaccion(1, id, tipo, valor)
+							UpdateTable()
+						}
+					}, Window)
+					dialog.Show()
+				}
 				b.SetText(data[i.Row][i.Col])
 			case 10:
 				l.Hide()

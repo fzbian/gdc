@@ -161,15 +161,62 @@ func EditarCajero(id int, tipo string, valor any) (string, error) {
 	return "Cajero editado", nil
 }
 
-// Enlistar cajeros
-func EnlistarCajeros() ([]Cajero, error) {
-	// Enlistar los cajeros
+// Enlistar cjaeros
+func EnlistarCajeros() ([][]string, error) {
+	// Obtener todas las cajeros de la tabla
 	var cajeros []Cajero
-	result := Db.Table("cajeros").Find(&cajeros)
-	if result.Error != nil {
-		return nil, result.Error
+	if err := Db.Find(&cajeros).Error; err != nil {
+		return nil, err
 	}
-	return cajeros, nil
+
+	// Construir la matriz de resultados
+	resultados := make([][]string, len(cajeros)+1)
+	//resultados[0] = []string{"ID", "UsuarioID", "SucursalID", "Saldo"}
+
+	for i, cajero := range cajeros {
+		valor := *cajero.UsuarioID
+		nombre := ObtenerUsuarioPorCajeroId(valor)
+		if ObtenerUsuarioPorCajeroId(valor) == "" {
+			nombre = "Desocupado"
+		}
+
+		resultados[i] = []string{
+			fmt.Sprintf("%d", cajero.ID),
+			nombre,
+			ObtenerNombreSucursalPorLaId(cajero.SucursalID),
+			FormatearDinero(cajero.Saldo),
+		}
+	}
+
+	return resultados, nil
+}
+
+// Obtener nombre del usuario por la id del cajero
+func ObtenerUsuarioPorCajeroId(id int) string {
+	// Verificar que la id no sea 0 o menor a 0
+	if id <= 0 {
+		return ""
+	}
+	// Verificar que el cajero exista
+	if !CajeroExistePorLaId(id) {
+		return ""
+	}
+
+	// Obtener el cajero
+	var cajero Cajero
+	result := Db.Table("cajeros").Where("id = ?", id).First(&cajero)
+	if result.Error != nil {
+		return ""
+	}
+
+	// Obtener el usuario
+	var usuario Usuarios
+	result = Db.Table("usuarios").Where("id = ?", cajero.UsuarioID).First(&usuario)
+	if result.Error != nil {
+		return ""
+	}
+
+	return usuario.Nombre
 }
 
 // CajeroExistePorLaId
@@ -614,6 +661,21 @@ func SucursalExistePorLaId(id int) bool {
 	return true
 }
 
+// Obtener el nombre de la sucursal por la id
+func ObtenerNombreSucursalPorLaId(id int) string {
+	// Verificar que el id no sea vacio o menor a 0
+	if id <= 0 {
+		return ""
+	}
+	// Verificar que el id exista en la base de datos
+	var s Sucursal
+	result := Db.Table("sucursales").Where("id = ?", id).First(&s)
+	if result.Error != nil {
+		return ""
+	}
+	return s.Nombre
+}
+
 /* Transacciones */
 
 // CrearTransacciones
@@ -766,8 +828,11 @@ func EditarTransaccion(usuario_id, transaccion_id int, tipo string, valor any) (
 	}
 	if tipo == "descripcion" {
 		// Verificar que la descripcion no sea vacia
-		if valor.(string) == "" {
+		if valor == "" {
 			descripcion := "Sin descripcion"
+			valor = descripcion
+		} else {
+			descripcion := valor.(string)
 			valor = descripcion
 		}
 		// Actualizar la descripcion de la transaccion
