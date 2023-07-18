@@ -11,7 +11,7 @@ import (
 )
 
 var TableContainer *fyne.Container
-var ActualSucursal = 1
+var ActualSucursalTransacciones = 1
 
 // Funciones para crear los componentes de la vista
 func GetLabelsTransacciones() *widget.Label {
@@ -23,13 +23,13 @@ func GetSelectTransacciones() *widget.Select {
 	labelSelect := widget.NewSelect([]string{"SUCURSAL 1", "SUCURSAL 2", "SUCURSAL 3"}, func(s string) {
 		switch s {
 		case "SUCURSAL 1":
-			ActualSucursal = 1
+			ActualSucursalTransacciones = 1
 			UpdateTable()
 		case "SUCURSAL 2":
-			ActualSucursal = 2
+			ActualSucursalTransacciones = 2
 			UpdateTable()
 		case "SUCURSAL 3":
-			ActualSucursal = 3
+			ActualSucursalTransacciones = 3
 			UpdateTable()
 		}
 	})
@@ -180,13 +180,13 @@ func CreateTable(data [][]string) *widget.Table {
 }
 
 func UpdateTable() {
-	if ActualSucursal == 1 {
+	if ActualSucursalTransacciones == 1 {
 		TableContainer.Objects[0] = GetTableTransacciones(1)
 		TableContainer.Refresh()
-	} else if ActualSucursal == 2 {
+	} else if ActualSucursalTransacciones == 2 {
 		TableContainer.Objects[0] = GetTableTransacciones(2)
 		TableContainer.Refresh()
-	} else if ActualSucursal == 3 {
+	} else if ActualSucursalTransacciones == 3 {
 		TableContainer.Objects[0] = GetTableTransacciones(3)
 		TableContainer.Refresh()
 	}

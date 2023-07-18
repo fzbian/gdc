@@ -191,6 +191,45 @@ func EnlistarCajeros() ([][]string, error) {
 	return resultados, nil
 }
 
+// Enlistar cajeros por sucursal id
+func EnlistarCajerosPorSucursalId(sucursal_id int) ([][]string, error) {
+	// Verificar que la sucursal_id no sea 0 o menor a 0
+	if sucursal_id <= 0 {
+		return nil, errors.New("La sucursal_id no es válida")
+	}
+	// Verificar que la sucursal exista
+	if !SucursalExistePorLaId(sucursal_id) {
+		return nil, errors.New("La sucursal no existe")
+	}
+
+	// Obtener todas las cajeros de la tabla
+	var cajeros []Cajero
+	if err := Db.Where("sucursal_id = ?", sucursal_id).Find(&cajeros).Error; err != nil {
+		return nil, err
+	}
+
+	// Construir la matriz de resultados
+	resultados := make([][]string, len(cajeros))
+	//resultados[0] = []string{"ID", "UsuarioID", "SucursalID", "Saldo"}
+
+	for i, cajero := range cajeros {
+		valor := *cajero.UsuarioID
+		nombre := ObtenerUsuarioPorCajeroId(valor)
+		if ObtenerUsuarioPorCajeroId(valor) == "" {
+			nombre = "Desocupado"
+		}
+
+		resultados[i] = []string{
+			fmt.Sprintf("%d", cajero.ID),
+			nombre,
+			ObtenerNombreSucursalPorLaId(cajero.SucursalID),
+			FormatearDinero(cajero.Saldo),
+		}
+	}
+
+	return resultados, nil
+}
+
 // Obtener nombre del usuario por la id del cajero
 func ObtenerUsuarioPorCajeroId(id int) string {
 	// Verificar que la id no sea 0 o menor a 0
