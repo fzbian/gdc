@@ -11,7 +11,7 @@ func GetTabs() *container.AppTabs {
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	tabs.Append(container.NewTabItemWithIcon("Transacciones", theme.StorageIcon(), GetTabTransacciones()))
-	tabs.Append(container.NewTabItemWithIcon("Cajeros", theme.ComputerIcon(), GetCajerosContainer()))
+	tabs.Append(container.NewTabItemWithIcon("Cajeros", theme.ComputerIcon(), GetTabCajeros()))
 	tabs.Append(container.NewTabItemWithIcon("Usuarios", theme.AccountIcon(), widget.NewLabel("Usuarios")))
 	tabs.Append(container.NewTabItemWithIcon("Caja Menor", theme.GridIcon(), widget.NewLabel("Caja Menor")))
 	tabs.Append(container.NewTabItemWithIcon("Ajustes", theme.SettingsIcon(), widget.NewLabel("Ajustes")))

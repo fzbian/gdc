@@ -8,8 +8,8 @@ import (
 var Window fyne.Window
 
 func main() {
-	myApp := app.New()
-	Window = myApp.NewWindow("My App")
+	App := app.New()
+	Window = App.NewWindow("My App")
 
 	Window.SetContent(GetTabs())
 	Window.ShowAndRun()

@@ -13,56 +13,56 @@ import (
 var TableContainer *fyne.Container
 var ActualSucursalTransacciones = 1
 
-// Funciones para crear los componentes de la vista
-func GetLabelsTransacciones() *widget.Label {
-	return widget.NewLabel("Sucursal: ")
-}
+func GetSelectSucursalesTransacciones() *widget.Select {
+	sucursales, err := EnlistarSucursales()
+	if err != nil {
+		println(err.Error())
+	}
 
-// Funcion para crear el select de sucursales
-func GetSelectTransacciones() *widget.Select {
-	labelSelect := widget.NewSelect([]string{"SUCURSAL 1", "SUCURSAL 2", "SUCURSAL 3"}, func(s string) {
-		switch s {
-		case "SUCURSAL 1":
-			ActualSucursalTransacciones = 1
-			UpdateTable()
-		case "SUCURSAL 2":
-			ActualSucursalTransacciones = 2
-			UpdateTable()
-		case "SUCURSAL 3":
-			ActualSucursalTransacciones = 3
-			UpdateTable()
+	var sucursalesNombres []string
+	for _, sucursal := range sucursales {
+		sucursalesNombres = append(sucursalesNombres, sucursal[1])
+	}
+
+	labelSelect := widget.NewSelect(sucursalesNombres, func(s string) {
+		for _, sucursal := range sucursales {
+			if sucursal[1] == s {
+				sucursal, err := strconv.Atoi(sucursal[0])
+				if err != nil {
+					println(err.Error())
+				}
+				ActualSucursalTransacciones = sucursal
+			}
 		}
+		UpdateTable()
 	})
-	labelSelect.SetSelected("SUCURSAL 1")
+
+	labelSelect.SetSelected(sucursalesNombres[0])
 	return labelSelect
 }
 
-// Funcion para crear el boton de actualizar
 func GetButtonUpdateTransacciones() *widget.Button {
 	return widget.NewButtonWithIcon("Actualizar", theme.ViewRefreshIcon(), func() {
 		UpdateTable()
 	})
 }
 
-// Funcion para crear la tabla con la data
 func GetTableTransacciones(sucursal_id int) *widget.Table {
 	return CreateTable(GetDataTable(sucursal_id))
 }
 
-// Funcion para crear el contenedor principal
 func GetTabTransacciones() *fyne.Container {
 
 	TableContainer = container.NewMax(GetTableTransacciones(1))
 
 	MainContainer := container.NewBorder(container.NewHBox(
-		GetLabelsTransacciones(),
-		GetSelectTransacciones(),
+		widget.NewLabel("Sucursal: "),
+		GetSelectSucursalesTransacciones(),
 		GetButtonUpdateTransacciones()), nil, nil, nil, TableContainer)
 
 	return MainContainer
 }
 
-// Funcion para obtener la data de la base de datos
 func GetDataTable(sucursal_id int) [][]string {
 	datos, err := ElistarTransaccionesPorSucursal(sucursal_id)
 	if err != nil {
@@ -71,7 +71,6 @@ func GetDataTable(sucursal_id int) [][]string {
 	return datos
 }
 
-// Funcion para crear la tabla con la data
 func CreateTable(data [][]string) *widget.Table {
 
 	table := widget.NewTable(
@@ -180,14 +179,21 @@ func CreateTable(data [][]string) *widget.Table {
 }
 
 func UpdateTable() {
-	if ActualSucursalTransacciones == 1 {
-		TableContainer.Objects[0] = GetTableTransacciones(1)
-		TableContainer.Refresh()
-	} else if ActualSucursalTransacciones == 2 {
-		TableContainer.Objects[0] = GetTableTransacciones(2)
-		TableContainer.Refresh()
-	} else if ActualSucursalTransacciones == 3 {
-		TableContainer.Objects[0] = GetTableTransacciones(3)
-		TableContainer.Refresh()
+	sucursales, err := EnlistarSucursales()
+	if err != nil {
+		println(err.Error())
+	}
+
+	var sucursalesIds []int
+	for _, sucursal := range sucursales {
+		sucursal, _ := strconv.Atoi(sucursal[0])
+		sucursalesIds = append(sucursalesIds, sucursal)
+	}
+
+	for _, sucursal := range sucursalesIds {
+		if ActualSucursalTransacciones == sucursal {
+			TableContainer.Objects[0] = GetTableTransacciones(sucursal)
+			TableContainer.Refresh()
+		}
 	}
 }

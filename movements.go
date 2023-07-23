@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -152,8 +153,8 @@ func EditarCajero(id int, tipo string, valor any) (string, error) {
 			return "", errors.New("El saldo no puede ser menor a 0")
 		}
 	}
-
 	// Editar el cajero
+	println(fmt.Sprintf("ID: %d\nTipo: %s\nValor: %d", id, tipo, valor))
 	result := Db.Table("cajeros").Where("id = ?", id).Update(tipo, valor)
 	if result.Error != nil {
 		return "", result.Error
@@ -174,15 +175,10 @@ func EnlistarCajeros() ([][]string, error) {
 	//resultados[0] = []string{"ID", "UsuarioID", "SucursalID", "Saldo"}
 
 	for i, cajero := range cajeros {
-		valor := *cajero.UsuarioID
-		nombre := ObtenerUsuarioPorCajeroId(valor)
-		if ObtenerUsuarioPorCajeroId(valor) == "" {
-			nombre = "Desocupado"
-		}
 
 		resultados[i] = []string{
 			fmt.Sprintf("%d", cajero.ID),
-			nombre,
+			ObtenerUsuarioPorCajeroId(*cajero.UsuarioID),
 			ObtenerNombreSucursalPorLaId(cajero.SucursalID),
 			FormatearDinero(cajero.Saldo),
 		}
@@ -202,60 +198,38 @@ func EnlistarCajerosPorSucursalId(sucursal_id int) ([][]string, error) {
 		return nil, errors.New("La sucursal no existe")
 	}
 
-	// Obtener todas las cajeros de la tabla
 	var cajeros []Cajero
 	if err := Db.Where("sucursal_id = ?", sucursal_id).Find(&cajeros).Error; err != nil {
+		println(err.Error())
 		return nil, err
 	}
 
-	// Construir la matriz de resultados
 	resultados := make([][]string, len(cajeros))
-	//resultados[0] = []string{"ID", "UsuarioID", "SucursalID", "Saldo"}
 
 	for i, cajero := range cajeros {
-		valor := *cajero.UsuarioID
-		nombre := ObtenerUsuarioPorCajeroId(valor)
-		if ObtenerUsuarioPorCajeroId(valor) == "" {
-			nombre = "Desocupado"
-		}
-
 		resultados[i] = []string{
 			fmt.Sprintf("%d", cajero.ID),
-			nombre,
+			ObtenerUsuarioPorCajeroId(cajero.ID),
 			ObtenerNombreSucursalPorLaId(cajero.SucursalID),
 			FormatearDinero(cajero.Saldo),
 		}
 	}
-
 	return resultados, nil
 }
 
-// Obtener nombre del usuario por la id del cajero
+// Obtener el nombre del usuario actual en el cajero teniendo en cuenta la id del cajero, devolver el string "DESOCUPADO" si no existe
 func ObtenerUsuarioPorCajeroId(id int) string {
-	// Verificar que la id no sea 0 o menor a 0
-	if id <= 0 {
-		return ""
-	}
-	// Verificar que el cajero exista
-	if !CajeroExistePorLaId(id) {
-		return ""
-	}
-
-	// Obtener el cajero
 	var cajero Cajero
-	result := Db.Table("cajeros").Where("id = ?", id).First(&cajero)
-	if result.Error != nil {
-		return ""
-	}
+	Db.Table("cajeros").Where("id = ?", id).First(&cajero)
 
-	// Obtener el usuario
 	var usuario Usuarios
-	result = Db.Table("usuarios").Where("id = ?", cajero.UsuarioID).First(&usuario)
+	result := Db.Table("usuarios").Where("id = ?", cajero.UsuarioID).First(&usuario)
 	if result.Error != nil {
-		return ""
+		return "DESOCUPADO"
+	} else {
+		return usuario.Nombre
 	}
 
-	return usuario.Nombre
 }
 
 // CajeroExistePorLaId
@@ -266,7 +240,7 @@ func CajeroExistePorLaId(id int) bool {
 	}
 	// Verificar que el id no exista en la base de datos
 	var s Cajero
-	result := Db.Table("Cajeros").Where("id = ?", id).First(&s)
+	result := Db.Table("cajeros").Where("id = ?", id).First(&s)
 	if result.Error != nil {
 		return false
 	}
@@ -661,13 +635,21 @@ func EditarSucursal(id int, tipo, valor string) (string, error) {
 	return "Sucursal editada exitosamente", nil
 }
 
-func EnlistarSucursales() ([]Sucursal, error) {
+func EnlistarSucursales() ([][]string, error) {
 	var sucursales []Sucursal
 	result := Db.Table("sucursales").Find(&sucursales)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return sucursales, nil
+
+	var sucursalesEnlistadas [][]string
+	for _, sucursal := range sucursales {
+		sucursalesEnlistadas = append(sucursalesEnlistadas, []string{
+			strconv.Itoa(sucursal.ID),
+			sucursal.Nombre,
+			sucursal.FechaCreacion.Format("2006-01-02 15:04:05")})
+	}
+	return sucursalesEnlistadas, nil
 }
 
 // Verificar que la sucursal no exista
@@ -1081,13 +1063,29 @@ func EditarUsuario(id int, tipo string, valor any) (string, error) {
 }
 
 // Enlistar usuarios
-func EnlistarUsuarios() ([]Usuarios, error) {
+func EnlistarUsuarios() ([][]string, error) {
+	// Obtener todas las cajeros de la tabla
 	var usuarios []Usuarios
-	result := Db.Table("usuarios").Find(&usuarios)
-	if result.Error != nil {
-		return nil, result.Error
+	if err := Db.Find(&usuarios).Error; err != nil {
+		return nil, err
 	}
-	return usuarios, nil
+
+	// Construir la matriz de resultados
+	resultados := make([][]string, len(usuarios))
+
+	for i, usuario := range usuarios {
+
+		resultados[i] = []string{
+			fmt.Sprintf("%d", usuario.Id),
+			usuario.Usuario,
+			usuario.Nombre,
+			fmt.Sprintf("%d", usuario.Clave),
+			fmt.Sprintf("%d", usuario.Rango),
+			FormatearFecha(usuario.FechaCreacion),
+		}
+	}
+
+	return resultados, nil
 }
 
 func UsuarioExistePorElUsuario(usuario string) bool {

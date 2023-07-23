@@ -5,6 +5,7 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var (
@@ -23,7 +24,7 @@ func Connect() *gorm.DB {
 	DB_DATABASE := " julio"
 
 	// Create a connection string.
-	dns := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		DB_USER,
 		DB_PASSWORD,
 		DB_HOST,
@@ -31,7 +32,9 @@ func Connect() *gorm.DB {
 		DB_DATABASE)
 
 	// Open a connection to the database using the connection string.
-	db, err := gorm.Open(mysql.Open(dns))
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Silent), // Desactiva el log de GORM
+	})
 	if err != nil {
 		// If there was an error opening the connection, panic.
 		panic(err)
