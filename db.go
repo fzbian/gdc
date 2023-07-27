@@ -23,6 +23,12 @@ func Connect() *gorm.DB {
 	DB_PORT := "3306"
 	DB_DATABASE := " julio"
 
+	/*DB_USER := "fzbian"
+	DB_PASSWORD := "fabian@7167D"
+	DB_HOST := "mysql8.db4free.net"
+	DB_PORT := "3306"
+	DB_DATABASE := "gdc_fzbian"*/
+
 	// Create a connection string.
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		DB_USER,

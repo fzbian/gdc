@@ -598,13 +598,20 @@ func EliminarSucursal(nombre string) (string, error) {
 		return "", errors.New("No existe una sucursal con este nombre")
 	}
 
+	// Obtener el id de la sucursal por el nombre
+	var sucursal Sucursal
+	result := Db.Table("sucursales").Where("nombre = ?", nombre).First(&sucursal)
+	if result.Error != nil {
+		return "", result.Error
+	}
+	result = Db.Table("caja_menor").Where("sucursal_id = ?", sucursal.ID).Delete(&CajaMenor{})
 	// Eliminar la sucursal
-	result := Db.Table("sucursales").Where("nombre = ?", nombre).Delete(&Sucursal{})
+	result = Db.Table("sucursales").Where("nombre = ?", nombre).Delete(&Sucursal{})
 	if result.Error != nil {
 		return "", result.Error
 	}
 	// Eliminar caja menor de la sucursal
-	result = Db.Table("caja_menor").Where("sucursal_id = ?", nombre).Delete(&CajaMenor{})
+
 	return "Sucursal eliminada exitosamente", nil
 }
 
@@ -620,6 +627,12 @@ func EditarSucursal(id int, tipo, valor string) (string, error) {
 	// Verificar que el id exista
 	if !SucursalExistePorLaId(id) {
 		return "", errors.New("No existe una sucursal con este id")
+	}
+	if tipo == "nombre" {
+		// Verificar que el nombre no exista
+		if SucursalExistePorElNombre(valor) {
+			return "", errors.New("Ya existe una sucursal con este nombre")
+		}
 	}
 	// Verificar que el tipo sea valido dentro de un array de tipos de la variable TiposSucursales
 	TiposSucursales := []string{"nombre"}
@@ -1071,17 +1084,19 @@ func EnlistarUsuarios() ([][]string, error) {
 	}
 
 	// Construir la matriz de resultados
-	resultados := make([][]string, len(usuarios))
+	resultados := make([][]string, len(usuarios)+1)
+	resultados[0] = []string{"ID", "Usuario", "Nombre", "Clave", "Rango", "Fecha creacion", "Editar", "Eliminar"}
 
 	for i, usuario := range usuarios {
-
-		resultados[i] = []string{
+		resultados[i+1] = []string{
 			fmt.Sprintf("%d", usuario.Id),
 			usuario.Usuario,
 			usuario.Nombre,
 			fmt.Sprintf("%d", usuario.Clave),
 			fmt.Sprintf("%d", usuario.Rango),
 			FormatearFecha(usuario.FechaCreacion),
+			"Editar",
+			"Eliminar",
 		}
 	}
 

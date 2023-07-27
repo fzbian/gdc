@@ -35,8 +35,7 @@ func GetSelectSucursalesCajeros() *widget.Select {
 				ActualSucursalCajeros = sucursal
 			}
 		}
-		println("SUCURSAL ACTUAL: ", s)
-		UpdateCards()
+		UpdateCardsCajeros()
 	})
 
 	// Set the default value
@@ -45,13 +44,13 @@ func GetSelectSucursalesCajeros() *widget.Select {
 	return labelSelect
 }
 
-func GetButtonUpdateCards() *widget.Button {
+func GetButtonUpdateCardsCajeros() *widget.Button {
 	return widget.NewButtonWithIcon("Actualizar", theme.ViewRefreshIcon(), func() {
-		UpdateCards()
+		UpdateCardsCajeros()
 	})
 }
 
-func GetTopContainer() *fyne.Container {
+func GetTopContainerCajeros() *fyne.Container {
 	DataModify := container.NewHBox(
 		widget.NewLabel("Modificar"),
 		widget.NewSeparator(),
@@ -93,7 +92,7 @@ func GetTopContainer() *fyne.Container {
 					}
 					dialogInfo := dialog.NewInformation("Informacion", result, Window)
 					dialogInfo.Show()
-					UpdateCards()
+					UpdateCardsCajeros()
 				}
 			}, Window)
 			dialog.Show()
@@ -102,7 +101,7 @@ func GetTopContainer() *fyne.Container {
 	ContainerModify := container.NewHBox(
 		widget.NewLabel("Sucursal: "),
 		GetSelectSucursalesCajeros(),
-		GetButtonUpdateCards(),
+		GetButtonUpdateCardsCajeros(),
 	)
 	return container.NewVBox(
 		DataModify,
@@ -111,7 +110,7 @@ func GetTopContainer() *fyne.Container {
 }
 
 func GetCardsCajeros(sucursal_id int) *fyne.Container {
-	return CreateCards(GetDataCards(sucursal_id))
+	return CreateCardsCajeros(GetDataCards(sucursal_id))
 }
 
 func GetTabCajeros() *fyne.Container {
@@ -119,7 +118,7 @@ func GetTabCajeros() *fyne.Container {
 	CardsContainer = container.NewHBox(GetCardsCajeros(ActualSucursalCajeros))
 
 	MainContainer := container.NewBorder(
-		GetTopContainer(), nil, nil, nil, CardsContainer)
+		GetTopContainerCajeros(), nil, nil, nil, CardsContainer)
 
 	return MainContainer
 }
@@ -132,7 +131,7 @@ func GetDataCards(sucursal_id int) [][]string {
 	return datos
 }
 
-func CreateCards(datos [][]string) *fyne.Container {
+func CreateCardsCajeros(datos [][]string) *fyne.Container {
 	cardsContainer := container.NewMax()
 
 	if len(datos) == 0 {
@@ -174,7 +173,7 @@ func CreateCards(datos [][]string) *fyne.Container {
 							} else {
 								dialogInfo := dialog.NewInformation("Informacion", result, Window)
 								dialogInfo.Show()
-								UpdateCards()
+								UpdateCardsCajeros()
 							}
 						case "Usuario":
 							usuarioID, err := strconv.Atoi(usuario)
@@ -189,7 +188,7 @@ func CreateCards(datos [][]string) *fyne.Container {
 							} else {
 								dialogInfo := dialog.NewInformation("Informacion", result, Window)
 								dialogInfo.Show()
-								UpdateCards()
+								UpdateCardsCajeros()
 							}
 						case "Saldo":
 							result, err := EditarCajero(cajeroID, "saldo", saldo)
@@ -201,7 +200,7 @@ func CreateCards(datos [][]string) *fyne.Container {
 							} else {
 								dialogInfo := dialog.NewInformation("Informacion", result, Window)
 								dialogInfo.Show()
-								UpdateCards()
+								UpdateCardsCajeros()
 							}
 						}
 					} else {
@@ -282,7 +281,7 @@ func CreateCards(datos [][]string) *fyne.Container {
 						}
 						dialogInfo := dialog.NewInformation("Informacion", result, Window)
 						dialogInfo.Show()
-						UpdateCards()
+						UpdateCardsCajeros()
 					}
 				}, Window)
 				confirm.Show()
@@ -294,7 +293,7 @@ func CreateCards(datos [][]string) *fyne.Container {
 	return cardsContainer
 }
 
-func UpdateCards() {
+func UpdateCardsCajeros() {
 	sucursales, err := EnlistarSucursales()
 	if err != nil {
 		println(err.Error())
@@ -312,7 +311,7 @@ func UpdateCards() {
 			CardsContainer.RemoveAll()
 
 			// Obtener las nuevas tarjetas y agregarlas al contenedor
-			newCardsContainer := CreateCards(GetDataCards(ActualSucursalCajeros))
+			newCardsContainer := CreateCardsCajeros(GetDataCards(ActualSucursalCajeros))
 			for _, obj := range newCardsContainer.Objects {
 				CardsContainer.Add(obj)
 			}

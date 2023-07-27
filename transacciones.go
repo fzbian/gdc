@@ -14,6 +14,7 @@ var TableContainer *fyne.Container
 var ActualSucursalTransacciones = 1
 
 func GetSelectSucursalesTransacciones() *widget.Select {
+	// TODO: Cada que se agregue una sucursal, se debe actualizar el select
 	sucursales, err := EnlistarSucursales()
 	if err != nil {
 		println(err.Error())
@@ -34,7 +35,7 @@ func GetSelectSucursalesTransacciones() *widget.Select {
 				ActualSucursalTransacciones = sucursal
 			}
 		}
-		UpdateTable()
+		UpdateTableTransacciones()
 	})
 
 	labelSelect.SetSelected(sucursalesNombres[0])
@@ -43,12 +44,12 @@ func GetSelectSucursalesTransacciones() *widget.Select {
 
 func GetButtonUpdateTransacciones() *widget.Button {
 	return widget.NewButtonWithIcon("Actualizar", theme.ViewRefreshIcon(), func() {
-		UpdateTable()
+		UpdateTableTransacciones()
 	})
 }
 
 func GetTableTransacciones(sucursal_id int) *widget.Table {
-	return CreateTable(GetDataTable(sucursal_id))
+	return CreateTableTransacciones(GetDataTableSucursales(sucursal_id))
 }
 
 func GetTabTransacciones() *fyne.Container {
@@ -63,7 +64,7 @@ func GetTabTransacciones() *fyne.Container {
 	return MainContainer
 }
 
-func GetDataTable(sucursal_id int) [][]string {
+func GetDataTableSucursales(sucursal_id int) [][]string {
 	datos, err := ElistarTransaccionesPorSucursal(sucursal_id)
 	if err != nil {
 		panic(err)
@@ -71,7 +72,7 @@ func GetDataTable(sucursal_id int) [][]string {
 	return datos
 }
 
-func CreateTable(data [][]string) *widget.Table {
+func CreateTableTransacciones(data [][]string) *widget.Table {
 
 	table := widget.NewTable(
 		func() (int, int) {
@@ -112,7 +113,7 @@ func CreateTable(data [][]string) *widget.Table {
 							{Text: "Valor", Widget: widget.NewEntry()},
 						},
 					}
-					dialog := dialog.NewCustomConfirm("Editar transaccion", "Aceptar", "Cancelar", form, func(b bool) {
+					dialogEditarTransaccion := dialog.NewCustomConfirm("Editar transaccion", "Aceptar", "Cancelar", form, func(b bool) {
 						id, err := strconv.Atoi(data[i.Row][1])
 						if err != nil {
 							panic(err)
@@ -121,7 +122,7 @@ func CreateTable(data [][]string) *widget.Table {
 						if tipo == "descripcion" {
 							valor = form.Items[1].Widget.(*widget.Entry).Text
 							EditarTransaccion(1, id, tipo, valor)
-							UpdateTable()
+							UpdateTableTransacciones()
 						} else if tipo == "valor" {
 							// Si el valor no es un numero
 							valor, err := strconv.Atoi(form.Items[1].Widget.(*widget.Entry).Text)
@@ -131,10 +132,10 @@ func CreateTable(data [][]string) *widget.Table {
 								return
 							}
 							EditarTransaccion(1, id, tipo, valor)
-							UpdateTable()
+							UpdateTableTransacciones()
 						}
 					}, Window)
-					dialog.Show()
+					dialogEditarTransaccion.Show()
 				}
 				b.SetText(data[i.Row][i.Col])
 			case 10:
@@ -149,7 +150,7 @@ func CreateTable(data [][]string) *widget.Table {
 								panic(err)
 							}
 							EliminarTransaccion(id)
-							UpdateTable()
+							UpdateTableTransacciones()
 						}
 					}, Window)
 					confirm.Show()
@@ -178,7 +179,7 @@ func CreateTable(data [][]string) *widget.Table {
 	return table
 }
 
-func UpdateTable() {
+func UpdateTableTransacciones() {
 	sucursales, err := EnlistarSucursales()
 	if err != nil {
 		println(err.Error())
